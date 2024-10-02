@@ -4,7 +4,7 @@ Login via ssh or use Web shell.
 
 Download and uncompress the fancontrol package:
 
-    mkdir -p /var/db/system/custom/fan
+    sudo mkdir -p /var/db/system/custom/fan
    
     DEBIANVER=$(lsb_release -cs 2>/dev/null)
     PACKAGEINFO=$(wget  -qO- "https://packages.debian.org/$DEBIANVER/all/fancontrol/download")
