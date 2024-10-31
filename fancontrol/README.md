@@ -10,7 +10,7 @@ Download and uncompress the fancontrol package:
     PACKAGEINFO=$(wget  -qO- "https://packages.debian.org/$DEBIANVER/all/fancontrol/download")
     URI=$(echo "$PACKAGEINFO" | grep -oP 'href="\K[^"]*' | grep -E "\.deb$" |  sed -E 's|https?://[^/]+||' | grep ^/debian/pool/main|head -n1)
     sudo wget "http://ftp.debian.org$URI" -O /var/db/system/custom/fan/fancontrol.deb
-    sudo /usr/bin/dpkg-deb -x fancontrol.deb /var/db/system/custom/fan/fancontrol
+    sudo /usr/bin/dpkg-deb -x /var/db/system/custom/fan/fancontrol.deb /var/db/system/custom/fan/fancontrol
 
 \
 Create a script to start the service at boot
@@ -32,9 +32,6 @@ Create a script to start the service at boot
      /var/db/system/custom/fan/fancontrol/usr/sbin/fancontrol
     EOF
 
-    #make it executable
-    chmod +x /var/db/system/custom/fan/fancontrol.init
-
 \
 Prepare the configuration by running - save it under /var/db/system/custom/fan/fancontrol.config
 
@@ -48,8 +45,8 @@ or use this pre-made one:
     DEVNAME=hwmon1=coretemp hwmon2=f71869a
     FCTEMPS=hwmon2/device/pwm2=hwmon1/temp2_input
     FCFANS= hwmon2/device/pwm2=hwmon2/device/fan2_input
-    MINTEMP=hwmon2/device/pwm2=30
-    MAXTEMP=hwmon2/device/pwm2=60
+    MINTEMP=hwmon2/device/pwm2=40
+    MAXTEMP=hwmon2/device/pwm2=56
     MINSTART=hwmon2/device/pwm2=150
     MINSTOP=hwmon2/device/pwm2=0
     MAXPWM=250
@@ -65,5 +62,5 @@ Add SystemD Sleep hook [not tested]
 \
 In TrueNAS, goto System -> Advanced Setings -> Init/Shutdown Scripts
 \
-Add a Pre-Init script with path `/var/db/system/custom/fan/fancontrol.init`
+Add a Pre-Init script with path `/bin/bash /var/db/system/custom/fan/fancontrol.init`
 
