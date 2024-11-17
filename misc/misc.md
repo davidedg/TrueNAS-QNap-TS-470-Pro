@@ -66,8 +66,13 @@ Inspect again, take note of the UUIDs of the new partitions (also visible with f
     
 Then you can create and export the pool:
 
-    sudo zpool create -O mountpoint=none ssd mirror /dev/disk/by-partuuid/5a76cf19-ba92-43ee-81ab-fcf287ea2e57 /dev/disk/by-partuuid/cf936eda-a2ba-4030-9294-db2f78c85feb
+    sudo zpool create ssd mirror /dev/disk/by-partuuid/5a76cf19-ba92-43ee-81ab-fcf287ea2e57 /dev/disk/by-partuuid/cf936eda-a2ba-4030-9294-db2f78c85feb
     sudo zpool export ssd
+
+(please note the below error message is expected and ok):
+
+    cannot mount '/ssd': failed to create mountpoint: Read-only file system
+
 
 In the GUI, import the new created pool
 
