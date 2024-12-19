@@ -83,7 +83,6 @@ REPLACE A FAILED DRIVE IN AN SSD SPLIT CFG:
 Let's assume sdb is the failed drive (but already replaced) and sda is the remaining disk.
 
 \
-
 System -> Boot -> Boot Pool Status -> boot-pool -> mirror-0
 \
 Select the failed disk -> 3 dots -> Replace -> pick the new empty disk (sdb)
