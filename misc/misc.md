@@ -81,7 +81,10 @@ REPLACE A FAILED DRIVE IN AN SSD SPLIT CFG:
 -------------------------------------------
 
 Let's assume sdb is the failed drive (but already replaced) and sda is the remaining disk.
+\
+Also, note that the uuids here will not match the uuids in the previous section, as I documented this for another system.
 
+\
 \
 System -> Boot -> Boot Pool Status -> boot-pool -> mirror-0
 \
@@ -102,7 +105,7 @@ However, the boot pool partition will be created using all the available space, 
      2    2088   1050663   1048576   512M      f3823c0e-0451-468e-9ebe-c1e31bd7d05b
      3 1050664 268435422 267384759 127.5G      de3d5435-58d5-4eca-95c0-4c6a73ad37c5
 
-
+\
 To restore the ssd-split configuration, we'll need to adjust the partitions manually:
 
 \
@@ -132,7 +135,9 @@ Check the sizes and record the UUID for the 4th partition:
      3  1050664  34605095  33554432  16G      09f91a0e-697b-4c30-9363-f3f6480e1cd8
      4 34605096 202377255 167772160  80G      c1e39c0c-022b-4a61-8f15-cdc092f1f699
 
+(fun fact I noticed: the gui will re-create the partitions not aligned. I do not care too much as this is the boot volume).
 
+\
 Then re-attach the sdb3 to the boot-pool:
 
     zpool attach boot-pool /dev/sda3 /dev/sdb3
