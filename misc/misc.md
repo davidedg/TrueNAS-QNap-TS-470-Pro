@@ -76,6 +76,116 @@ Then you can create and export the pool:
 
 In the GUI, import the new created pool
 
+
+REPLACE A FAILED DRIVE IN AN SSD SPLIT CFG:
+-------------------------------------------
+
+Let's assume sdb is the failed drive (but already replaced) and sda is the remaining disk.
+
+\
+
+System -> Boot -> Boot Pool Status -> boot-pool -> mirror-0
+\
+Select the failed disk -> 3 dots -> Replace -> pick the new empty disk (sdb)
+
+\
+this procedure will ensure it is done the TrueNAS way, which will include cloning the EFI partition (/dev/sdX2) and re-installing the boot loader
+
+\
+However, the boot pool partition will be created using all the available space, i.e.:
+
+    root@truenas[~]# sudo partx -v -s  /dev/sdb
+    partition: none, disk: /dev/sdb, lower: 0, upper: 0
+    /dev/sdb: partition table type 'gpt' detected
+    range recount: max partno=3, lower=0, upper=0
+    NR   START       END   SECTORS   SIZE NAME UUID
+     1      40      2087      2048     1M      f1715c51-1a12-4f36-8695-bd8d6163a3a2
+     2    2088   1050663   1048576   512M      f3823c0e-0451-468e-9ebe-c1e31bd7d05b
+     3 1050664 268435422 267384759 127.5G      de3d5435-58d5-4eca-95c0-4c6a73ad37c5
+
+
+To restore the ssd-split configuration, we'll need to adjust the partitions manually:
+
+\
+First, detach the new disk from the boot-pool volume:
+
+    zpool detach boot-pool sdb3
+
+Then delete the 3rd partition:
+
+    sgdisk -d 3 /dev/sdb
+
+Recreate 3rd and 4th partitions as per this initial guide:
+
+    sgdisk -n 3:0:+16G -t3:BF01 /dev/sdb
+    sgdisk -n 4:0:+80G -t4:BF01 /dev/sdb
+    partprobe /dev/sdb
+
+Check the sizes and record the UUID for the 4th partition:
+
+    root@truenas[~]# sudo partx -v -s  /dev/sdb
+    partition: none, disk: /dev/sdb, lower: 0, upper: 0
+    /dev/sdb: partition table type 'gpt' detected
+    range recount: max partno=4, lower=0, upper=0
+    NR    START       END   SECTORS SIZE NAME UUID
+     1       40      2087      2048   1M      f1715c51-1a12-4f36-8695-bd8d6163a3a2
+     2     2088   1050663   1048576 512M      f3823c0e-0451-468e-9ebe-c1e31bd7d05b
+     3  1050664  34605095  33554432  16G      09f91a0e-697b-4c30-9363-f3f6480e1cd8
+     4 34605096 202377255 167772160  80G      c1e39c0c-022b-4a61-8f15-cdc092f1f699
+
+
+Then re-attach the sdb3 to the boot-pool:
+
+    zpool attach boot-pool /dev/sda3 /dev/sdb3
+
+And wait for resilvering to finish
+
+\
+Check SSD pool and notice the id of the failed disk:
+
+    root@truenas[~]# zpool status ssd
+      pool: ssd
+     state: DEGRADED
+    status: One or more devices could not be used because the label is missing or
+            invalid.  Sufficient replicas exist for the pool to continue
+            functioning in a degraded state.
+    action: Replace the device using 'zpool replace'.
+       see: https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-4J
+    config:
+    
+            NAME                                      STATE     READ WRITE CKSUM
+            ssd                                       DEGRADED     0     0     0
+              mirror-0                                DEGRADED     0     0     0
+                13ed13d5-e4eb-429d-93f3-fc780011c06c  ONLINE       0     0     0
+                10983865452315239826                  UNAVAIL      0     0     0  was /dev/disk/by-partuuid/b856820d-4f3b-459f-abee-af827f432b52
+
+
+
+Finally, replace the failed disk with the new partition, using its uuid:
+
+    zpool replace ssd 10983865452315239826 /dev/disk/by-partuuid/c1e39c0c-022b-4a61-8f15-cdc092f1f699
+
+
+Check the status and wait until the resilver fully completes:
+
+    root@truenas[~]# zpool status ssd
+      pool: ssd
+     state: ONLINE
+      scan: resilvered 232M in 00:00:01 with 0 errors on Thu Dec 19 12:52:46 2024
+    config:
+    
+            NAME                                      STATE     READ WRITE CKSUM
+            ssd                                       ONLINE       0     0     0
+              mirror-0                                ONLINE       0     0     0
+                13ed13d5-e4eb-429d-93f3-fc780011c06c  ONLINE       0     0     0
+                c1e39c0c-022b-4a61-8f15-cdc092f1f699  ONLINE       0     0     0
+    
+    errors: No known data errors
+    
+
+Immediately reboot after that so that the TrueNAS database can update its ids.
+
+
 \
 NTFS-3G:
 --------
