@@ -8,7 +8,7 @@ Up to 24.04:
 
     sed -i 's/sgdisk -n3:0:0/sgdisk -n3:0:+16384M/g' /usr/sbin/truenas-install
 
-24.10:
+24.10, 25.04:
 
     sed -i 's/-n3:0:0/-n3:0:+16384M/g' /usr/lib/python3/dist-packages/truenas_installer/install.py
 
