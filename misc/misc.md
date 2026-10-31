@@ -196,7 +196,7 @@ sudo /sbin/swapon /dev/zvol/boot-pool/swap
 
 \
 SWAP:
---------
+-----
 
     sudo zfs create -V 2G -b "$(getconf PAGESIZE)" \
       -o logbias=throughput \
@@ -214,6 +214,15 @@ and add it to a pre-init script:
 
     sudo /sbin/swapon /dev/zvol/boot-pool/swap
 
+
+\
+DOCKER-NAT-INIT:
+----------------
+
+Post-init script to configure docker with a SNAT.
+Replace 192.168.0.xxx with the IP address you want to use for outbound traffic for containers that require special treatment:
+
+    until systemctl --quiet is-active docker; do sleep 1; done ; sleep 15 ; /sbin/iptables -t nat -I POSTROUTING -s 192.168.250.0/24 ! -o docker0 -j SNAT --to-source 192.168.0.xxx
 
 \
 NTFS-3G:
