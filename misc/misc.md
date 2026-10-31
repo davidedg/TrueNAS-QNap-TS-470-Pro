@@ -190,6 +190,31 @@ Check the status and wait until the resilver fully completes:
 Immediately reboot after that so that the TrueNAS database can update its ids.
 
 
+
+sudo /sbin/swapon /dev/zvol/boot-pool/swap
+
+
+\
+SWAP:
+--------
+
+    sudo zfs create -V 2G -b "$(getconf PAGESIZE)" \
+      -o logbias=throughput \
+      -o sync=always \
+      -o primarycache=metadata \
+      -o secondarycache=none \
+      -o compression=zle \
+      boot-pool/swap
+
+Then format it:
+
+    sudo mkswap /dev/zvol/boot-pool/swap
+
+and add it to a pre-init script:
+
+    sudo /sbin/swapon /dev/zvol/boot-pool/swap
+
+
 \
 NTFS-3G:
 --------
