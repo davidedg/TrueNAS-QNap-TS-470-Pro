@@ -214,6 +214,8 @@ and add it to a pre-init script:
 
     sudo /sbin/swapon /dev/zvol/boot-pool/swap
 
+Credit: [https://forums.truenas.com/t/add-a-swap-file-or-partition/37934/24](https://forums.truenas.com/t/add-a-swap-file-or-partition/37934/24)
+
 
 \
 DOCKER-NAT-INIT:
